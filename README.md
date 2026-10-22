@@ -7,3 +7,5 @@
 • qué resultado producirá el programa y cómo se interpretará: podras poner un filtro que te devolvera una lista segun lo que quieras buscar
 
 • cuál es el alcance de la primera versión y qué queda fuera: el alcance son las primeras 100 y quedan afuera las 250 restantes que hace IMDb
+
+? formatos de entrada y salida: el conjunto se puede leer desde CSV o JSON; el resultado de la b?squeda se muestra en una tabla y se guarda en `resultado_busqueda.csv`
