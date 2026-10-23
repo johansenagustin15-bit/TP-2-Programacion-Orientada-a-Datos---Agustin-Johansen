@@ -17,7 +17,7 @@ La búsqueda por título acepta coincidencias parciales sin distinguir mayúscul
 
 ## Datos y alcance
 
-Los datos se leen desde la carpeta `data`: `data/IMDb 100 Mejores Peliculas.csv` o `data/IMDb 100 Mejores Peliculas.json`. Ambos archivos contienen las mismas 100 películas; el JSON se generó a partir del CSV para probar la lectura de ambos formatos. La primera versión se limita a las 100 películas seleccionadas y no incluye las 250 restantes de IMDb.
+Los datos se leen desde la carpeta `data`: `data/IMDb 100 Mejores Peliculas.csv` o `data/IMDb 100 Mejores Peliculas.json`. Ambos archivos contienen las mismas 100 películas; el JSON se generó a partir del CSV para probar la lectura de ambos formatos. La primera versión se limita a las 100 películas seleccionadas y no incluye las 150 restantes de IMDb.
 
 ## Limpieza
 
