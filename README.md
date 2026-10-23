@@ -1,11 +1,22 @@
-• qué problema, fenómeno o necesidad se aborda: quiero que se pueda buscar comodamente las 100 mejores peliculas según IMDb
+# IMDb: 100 mejores películas
 
-• quién podría utilizar el resultado y para qué: cualquiera que quiera podría utilizarlo, ya sea para facilitar la busqueda para trabajos o por simple curiosidad
+## Objetivo
 
-• qué solución se propone y qué operaciones podrá realizar quien utilice el programa; propongo buscar por año, nombre en español e ingles, por ranking, por director o por genero
+La aplicación permite buscar cómodamente entre las 100 mejores películas según IMDb. Está pensada para quien quiera encontrar películas para un trabajo o por curiosidad.
 
-• qué resultado producirá el programa y cómo se interpretará: podras poner un filtro que te devolvera una lista segun lo que quieras buscar
+## Cómo usarla
 
-• cuál es el alcance de la primera versión y qué queda fuera: el alcance son las primeras 100 y quedan afuera las 250 restantes que hace IMDb
+Abrí `Busqueda.ipynb` en VS Code y ejecutá sus celdas en orden. El cuaderno importa las funciones de `peliculas.py`, carga y valida el archivo elegido, y luego inicia el menú con dos grupos de filtros:
 
-? formatos de entrada y salida: el conjunto se puede leer desde CSV o JSON; el resultado de la b?squeda se muestra en una tabla y se guarda en `resultado_busqueda.csv`
+- **Numéricos:** ranking, año y nota IMDb.
+- **De texto:** título de película, director y género.
+
+Ingresá el valor que querés buscar. Podés hacer varias búsquedas; elegí `0` para terminar. Cada consulta muestra una tabla y guarda sus resultados en `resultado_busqueda.csv`.
+
+## Datos y alcance
+
+Los datos se leen desde `IMDb 100 Mejores Peliculas.csv` o `IMDb 100 Mejores Peliculas.json`. Ambos archivos contienen las mismas 100 películas; el JSON se generó a partir del CSV para probar la lectura de ambos formatos. La primera versión se limita a las 100 películas seleccionadas y no incluye las 250 restantes de IMDb.
+
+## Limpieza
+
+El flujo valida la estructura, los datos vacíos o inválidos, los duplicados y los rangos esperados. Luego normaliza los espacios, convierte ranking, año y nota a tipos numéricos, descarta el título en inglés y renombra las columnas de salida como `Ranking`, `Titulo`, `Año` y `Nota`. Los archivos de entrada no se modifican.
