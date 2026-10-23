@@ -13,9 +13,11 @@ Abrí `Busqueda.ipynb` en VS Code y ejecutá sus celdas en orden. El cuaderno im
 
 Ingresá el valor que querés buscar. Podés hacer varias búsquedas; elegí `0` para terminar. Cada consulta muestra una tabla y guarda sus resultados en `resultado_busqueda.csv`.
 
+La búsqueda por título acepta coincidencias parciales sin distinguir mayúsculas y minúsculas. Para director se debe ingresar el nombre completo y para género, el nombre completo de un género (por ejemplo, `Drama`), aunque la película tenga otros géneros asociados. En ambos casos se ignoran las diferencias entre mayúsculas y minúsculas.
+
 ## Datos y alcance
 
-Los datos se leen desde `IMDb 100 Mejores Peliculas.csv` o `IMDb 100 Mejores Peliculas.json`. Ambos archivos contienen las mismas 100 películas; el JSON se generó a partir del CSV para probar la lectura de ambos formatos. La primera versión se limita a las 100 películas seleccionadas y no incluye las 250 restantes de IMDb.
+Los datos se leen desde la carpeta `data`: `data/IMDb 100 Mejores Peliculas.csv` o `data/IMDb 100 Mejores Peliculas.json`. Ambos archivos contienen las mismas 100 películas; el JSON se generó a partir del CSV para probar la lectura de ambos formatos. La primera versión se limita a las 100 películas seleccionadas y no incluye las 250 restantes de IMDb.
 
 ## Limpieza
 

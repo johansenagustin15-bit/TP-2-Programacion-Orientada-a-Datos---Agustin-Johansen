@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -136,9 +137,20 @@ def buscar_peliculas(datos, criterio, valor):
         if not texto:
             raise ValueError("El texto de búsqueda no puede estar vacío.")
         columna = columnas_texto[criterio]
-        coincidencias = datos[columna].str.contains(
-            texto, case=False, regex=False, na=False
-        )
+        if criterio == "titulo":
+            coincidencias = datos[columna].str.contains(
+                texto, case=False, regex=False, na=False
+            )
+        elif criterio == "director":
+            coincidencias = datos[columna].str.casefold().eq(texto.casefold())
+        else:
+            coincidencias = datos[columna].apply(
+                lambda generos: texto.casefold()
+                in [
+                    genero.strip().casefold()
+                    for genero in generos.split(",")
+                ]
+            )
         return datos.loc[coincidencias].sort_values("Ranking").reset_index(drop=True)
 
     if criterio not in columnas_numericas:
@@ -153,6 +165,17 @@ def buscar_peliculas(datos, criterio, valor):
         raise ValueError(
             f"Para buscar por {criterio}, ingresá un {tipo_esperado} válido."
         ) from error
+
+    limites = {
+        "ranking": (1, 100),
+        "año": (1888, 2100),
+        "nota": (0, 10),
+    }
+    minimo, maximo = limites[criterio]
+    if not minimo <= valor_numerico <= maximo:
+        raise ValueError(
+            f"Para buscar por {criterio}, ingresá un valor entre {minimo} y {maximo}."
+        )
 
     return (
         datos.loc[datos[columna] == valor_numerico]
@@ -170,6 +193,7 @@ def menu_busqueda(datos, ruta_resultado="resultado_busqueda.csv"):
         print("1. Buscar por un dato numérico")
         print("2. Buscar escribiendo texto")
         print("0. Salir")
+        sys.stdout.flush()
         tipo_busqueda = input("Elegí una opción: ").strip()
 
         if tipo_busqueda == "0":
@@ -187,18 +211,34 @@ def menu_busqueda(datos, ruta_resultado="resultado_busqueda.csv"):
 
         for numero, (_, nombre) in opciones.items():
             print(f"{numero}. {nombre}")
+        sys.stdout.flush()
         opcion = input("Elegí un filtro: ").strip()
         if opcion not in opciones:
             print("Filtro no válido. Volvé a intentarlo.\n")
             continue
-
         criterio, nombre_criterio = opciones[opcion]
-        valor = input(f"Ingresá {nombre_criterio.lower()}: ").strip()
-        try:
-            resultado = buscar_peliculas(datos, criterio, valor)
-        except ValueError as error:
-            print(f"Entrada no válida: {error}\n")
-            continue
+        es_texto = criterio in {"titulo", "director", "genero"}
+        while True:
+            sys.stdout.flush()
+            valor = input(f"Ingresá {nombre_criterio.lower()}: ").strip()
+            try:
+                resultado = buscar_peliculas(datos, criterio, valor)
+            except ValueError as error:
+                print(f"Entrada no válida: {error} Volvé a intentarlo.\n")
+                continue
+            if es_texto and resultado.empty:
+                if criterio == "director":
+                    print(
+                        "No se encontró el director con ese nombre. "
+                        "Intentá de nuevo.\n"
+                    )
+                else:
+                    print(
+                        "No se encontraron películas con ese texto. "
+                        "Revisá lo que escribiste e intentá de nuevo.\n"
+                    )
+                continue
+            break
 
         print(f"\nPelículas encontradas: {len(resultado)}")
         if resultado.empty:
