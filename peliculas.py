@@ -1,7 +1,10 @@
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
+
+from fuentes import crear_fuente
 
 
 COLUMNAS_ESPERADAS = [
@@ -34,12 +37,7 @@ def cargar_peliculas(ruta):
     if not ruta.is_file():
         raise FileNotFoundError(f"No se encontró el archivo de datos: {ruta}")
 
-    extension = ruta.suffix.lower()
-    if extension == ".csv":
-        return pd.read_csv(ruta)
-    if extension == ".json":
-        return pd.read_json(ruta)
-    raise ValueError(f"Formato no admitido para {ruta.name}: {extension}")
+    return crear_fuente(ruta).cargar(ruta)
 
 
 def inspeccionar_y_validar(datos, nombre="Datos"):
@@ -52,14 +50,30 @@ def inspeccionar_y_validar(datos, nombre="Datos"):
 
     datos = datos[COLUMNAS_ESPERADAS].copy()
     problemas = []
+    numero_fila = lambda mascara: (datos.index[mascara] + 2).tolist()
     vacios = datos[COLUMNAS_ESPERADAS].isna().sum()
     vacios_texto = datos[COLUMNAS_TEXTO].apply(
         lambda columna: columna.astype("string").str.strip().eq("").sum()
     )
     if vacios.sum() or vacios_texto.sum():
+        filas_vacias = datos.isna().any(axis=1)
+        filas_texto_vacio = datos[COLUMNAS_TEXTO].apply(
+            lambda columna: columna.astype("string").str.strip().eq("")
+        ).any(axis=1)
         problemas.append(
             f"hay valores nulos ({vacios.to_dict()}) o textos vacíos "
-            f"({vacios_texto.to_dict()})"
+            f"({vacios_texto.to_dict()}); filas: "
+            f"{numero_fila(filas_vacias | filas_texto_vacio)}"
+        )
+
+    anios_texto = datos["Anio"].astype("string").str.strip()
+    anios_con_formato_invalido = ~anios_texto.str.fullmatch(
+        r"\d{4}(?:\.0)?", na=False
+    )
+    if anios_con_formato_invalido.any():
+        problemas.append(
+            "Anio debe tener cuatro dígitos "
+            f"(filas: {numero_fila(anios_con_formato_invalido)})"
         )
 
     for columna in COLUMNAS_NUMERICAS:
@@ -67,32 +81,63 @@ def inspeccionar_y_validar(datos, nombre="Datos"):
         invalidos = convertidos.isna()
         if invalidos.any():
             problemas.append(
-                f"{columna} contiene {int(invalidos.sum())} valores no numéricos"
+                f"{columna} contiene {int(invalidos.sum())} valores no numéricos "
+                f"(filas: {numero_fila(invalidos)})"
             )
         if (
             columna in {"Rank", "Anio"}
             and not convertidos.dropna().mod(1).eq(0).all()
         ):
-            problemas.append(f"{columna} debe contener números enteros")
+            no_enteros = convertidos.notna() & convertidos.mod(1).ne(0)
+            problemas.append(
+                f"{columna} debe contener números enteros "
+                f"(filas: {numero_fila(no_enteros)})"
+            )
         datos[columna] = convertidos
 
-    if datos["Rank"].duplicated().any():
-        problemas.append("hay valores de Rank repetidos")
+    ranking_repetido = datos["Rank"].duplicated(keep=False)
+    if ranking_repetido.any():
+        problemas.append(
+            f"hay valores de Rank repetidos (filas: "
+            f"{numero_fila(ranking_repetido)})"
+        )
     if len(datos) != 100:
         problemas.append(f"se esperaban 100 filas y hay {len(datos)}")
-    if not datos["Rank"].between(1, 100).all():
-        problemas.append("hay rankings fuera del rango 1–100")
-    if not datos["Anio"].between(1888, 2100).all():
-        problemas.append("hay años fuera del rango razonable 1888–2100")
-    if not datos["Nota_IMDb"].between(0, 10).all():
-        problemas.append("hay notas fuera del rango 0–10")
-    if datos.duplicated().any():
-        problemas.append("hay filas completamente duplicadas")
+    ranking_fuera_de_rango = ~datos["Rank"].between(1, 100)
+    if ranking_fuera_de_rango.any():
+        problemas.append(
+            f"hay rankings fuera del rango 1–100 (filas: "
+            f"{numero_fila(ranking_fuera_de_rango)})"
+        )
+    anio_fuera_de_rango = ~datos["Anio"].between(1888, 2100)
+    if anio_fuera_de_rango.any():
+        problemas.append(
+            f"hay años fuera del rango razonable 1888–2100 (filas: "
+            f"{numero_fila(anio_fuera_de_rango)})"
+        )
+    nota_fuera_de_rango = ~datos["Nota_IMDb"].between(0, 10)
+    if nota_fuera_de_rango.any():
+        problemas.append(
+            f"hay notas fuera del rango 0–10 (filas: "
+            f"{numero_fila(nota_fuera_de_rango)})"
+        )
+    filas_duplicadas = datos.duplicated(keep=False)
+    if filas_duplicadas.any():
+        problemas.append(
+            f"hay filas completamente duplicadas (filas: "
+            f"{numero_fila(filas_duplicadas)})"
+        )
 
     if problemas:
-        raise ValueError(f"{nombre}: validación fallida: " + "; ".join(problemas))
+        raise ValueError(
+            f"{nombre}: validación fallida; se rechaza el archivo completo: "
+            + "; ".join(problemas)
+        )
 
-    print(f"{nombre}: 100 filas validadas; sin vacíos ni duplicados; rangos válidos.")
+    print(
+        f"{nombre}: {len(datos)} filas validadas; 0 filas rechazadas; "
+        "sin vacíos ni duplicados; rangos válidos."
+    )
     return datos
 
 
@@ -137,12 +182,10 @@ def buscar_peliculas(datos, criterio, valor):
         if not texto:
             raise ValueError("El texto de búsqueda no puede estar vacío.")
         columna = columnas_texto[criterio]
-        if criterio == "titulo":
+        if criterio in {"titulo", "director"}:
             coincidencias = datos[columna].str.contains(
                 texto, case=False, regex=False, na=False
             )
-        elif criterio == "director":
-            coincidencias = datos[columna].str.casefold().eq(texto.casefold())
         else:
             coincidencias = datos[columna].apply(
                 lambda generos: texto.casefold()
@@ -184,6 +227,40 @@ def buscar_peliculas(datos, criterio, valor):
     )
 
 
+@dataclass(frozen=True)
+class ConsultaPeliculas:
+    """Representa una consulta del usuario sobre el catálogo de películas."""
+
+    criterio: str
+    valor: str | int | float
+
+    def ejecutar(self, peliculas):
+        """Devuelve las películas que cumplen el criterio de la consulta."""
+        return buscar_peliculas(peliculas, self.criterio, self.valor)
+
+
+def mensaje_sin_resultados(criterio, valor):
+    """Describe qué filtro no produjo coincidencias y sugiere qué revisar."""
+    mensajes = {
+        "ranking": f"No se encontró una película con ranking {valor}.",
+        "año": f"No se encontraron películas estrenadas en el año {valor}.",
+        "nota": f"No se encontraron películas con nota IMDb {valor}.",
+        "titulo": (
+            f"No se encontraron películas cuyo título coincida con {valor!r}. "
+            "Probá con otra parte del título."
+        ),
+        "director": (
+            f"No se encontraron películas cuyo director coincida con {valor!r}. "
+            "Probá con otra parte del nombre."
+        ),
+        "genero": (
+            f"No se encontraron películas del género {valor!r}. "
+            "Ingresá el nombre completo de un género, por ejemplo, Drama."
+        ),
+    }
+    return mensajes[criterio]
+
+
 def menu_busqueda(datos, ruta_resultado="resultado_busqueda.csv"):
     """Permite realizar varias búsquedas y guarda cada resultado en CSV."""
     ruta_resultado = Path(ruta_resultado)
@@ -222,27 +299,18 @@ def menu_busqueda(datos, ruta_resultado="resultado_busqueda.csv"):
             sys.stdout.flush()
             valor = input(f"Ingresá {nombre_criterio.lower()}: ").strip()
             try:
-                resultado = buscar_peliculas(datos, criterio, valor)
+                resultado = ConsultaPeliculas(criterio, valor).ejecutar(datos)
             except ValueError as error:
                 print(f"Entrada no válida: {error} Volvé a intentarlo.\n")
                 continue
             if es_texto and resultado.empty:
-                if criterio == "director":
-                    print(
-                        "No se encontró el director con ese nombre. "
-                        "Intentá de nuevo.\n"
-                    )
-                else:
-                    print(
-                        "No se encontraron películas con ese texto. "
-                        "Revisá lo que escribiste e intentá de nuevo.\n"
-                    )
+                print(mensaje_sin_resultados(criterio, valor) + "\n")
                 continue
             break
 
         print(f"\nPelículas encontradas: {len(resultado)}")
         if resultado.empty:
-            print("No se encontraron películas con ese criterio.")
+            print(mensaje_sin_resultados(criterio, valor))
         else:
             print(resultado.to_string(index=False))
 
