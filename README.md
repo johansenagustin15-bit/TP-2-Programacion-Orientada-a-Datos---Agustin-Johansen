@@ -4,7 +4,7 @@
 
 ## Objetivo
 
-La aplicación permite buscar cómodamente entre las 100 mejores películas según IMDb. Está pensada para quien quiera encontrar películas para un trabajo o por curiosidad.
+La aplicación permite buscar cómodamente entre las 100 mejores películas según IMDb, porque considero que las que estan por debajo no son tan buenas o reconocidas. Está pensada para quien quiera encontrar películas para un trabajo o por curiosidad. Busco dar una forma mas sencilla con un filtro de busqueda.
 
 ## Cómo usarla
 
@@ -40,7 +40,7 @@ Las búsquedas por título y director aceptan coincidencias parciales sin distin
 
 Los archivos `data/IMDb 100 Mejores Peliculas.csv` y `data/IMDb 100 Mejores Peliculas.json` contienen los mismos 100 registros. Cada fila representa una película; se utilizan ranking, título en español, título en inglés, año, nota de IMDb, director y géneros. El JSON se generó a partir del CSV para comprobar que el programa procese los dos formatos.
 
-La fuente indicada para el listado es [IMDb, lista ls070295830](https://www.imdb.com/es/list/ls070295830/), consultada el 9 de octubre de 2026. No se identificó una licencia abierta específica para estos datos. Según las [Condiciones de uso de IMDb](https://www.imdb.com/conditions), IMDb y sus proveedores reservan derechos sobre el contenido y sus compilaciones; el acceso se concede para uso personal y no comercial bajo condiciones limitadas, y la extracción automatizada requiere autorización expresa. Estas condiciones no deben interpretarse como una licencia abierta ni como permiso general para redistribuir la lista. Para esta demostración académica se atribuye la fuente y se describe la limitación; no se afirma que exista autorización para otros usos.
+La fuente indicada para el listado es https://www.imdb.com/es/list/ls070295830/, la página oficial, consultada y creado el dataset el 9 de octubre de 2026. No se identificó una licencia abierta específica para estos datos. Según las [Condiciones de uso de IMDb](https://www.imdb.com/conditions), IMDb y sus proveedores reservan derechos sobre el contenido y sus compilaciones; el acceso se concede para uso personal y no comercial bajo condiciones limitadas, y la extracción automatizada requiere autorización expresa. Estas condiciones no deben interpretarse como una licencia abierta ni como permiso general para redistribuir la lista. Para esta demostración académica se atribuye la fuente y se describe la limitación; no se afirma que exista autorización para otros usos.
 
 Es una muestra de 100 observaciones. El listado es una selección y no representa todas las películas ni todos los gustos; los rankings y notas pueden cambiar con el tiempo. La traducción de los títulos al español también puede variar según la fuente. La primera versión no consulta IMDb en tiempo real ni incluye el resto de las películas.
 
