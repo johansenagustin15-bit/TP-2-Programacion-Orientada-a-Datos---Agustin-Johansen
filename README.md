@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-La aplicación permite buscar cómodamente entre las 100 mejores películas según IMDb. Está pensada para quien quiera encontrar películas para un trabajo o por curiosidad.
+La aplicación permite buscar cómodamente entre las 100 mejores películas según IMDb. Está pensada para quien quiera encontrar películas para un trabajo o por curiosidad, busca que puedas ver con mucha mas comodidad el puesto de alguna pelicula en el ranking o ver cuantas peliculas en la lista tiene un director, cuantas peliculas de cierto género hay, etc.
 
 ## Cómo usarla
 
@@ -22,3 +22,6 @@ Los datos se leen desde la carpeta `data`: `data/IMDb 100 Mejores Peliculas.csv`
 ## Limpieza
 
 El flujo valida la estructura, los datos vacíos o inválidos, los duplicados y los rangos esperados. Luego normaliza los espacios, convierte ranking, año y nota a tipos numéricos, descarta el título en inglés y renombra las columnas de salida como `Ranking`, `Titulo`, `Año` y `Nota`. Los archivos de entrada no se modifican.
+## Fuentes
+https://www.imdb.com/es/list/ls070295830/
+El dataset lo cree con IA basándome en la fuente, pueden llegar a variar los puestos de algunas peliculas, ya que lo cree el 9/10/2026
