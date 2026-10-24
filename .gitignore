@@ -1,0 +1,10 @@
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+
+# Generated search results
+resultado_busqueda.csv
